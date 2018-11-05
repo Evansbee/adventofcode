@@ -1,2 +1,14 @@
 def helpers_working():
 	print("Helpers are working")
+	
+	
+def wrap_to_count(the_string, characters):
+	start = 0
+	idx = start + characters
+	while idx < len(the_string):
+		while the_string[idx] != ' ' and idx > start:
+			idx-=1
+		the_string = the_string[:idx] + '\n' + the_string[idx+1:]
+		idx += characters
+	return the_string
+	
