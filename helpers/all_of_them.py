@@ -12,3 +12,8 @@ def wrap_to_count(the_string, characters):
 		idx += characters
 	return the_string
 	
+
+def only_or_array(foo):
+	if len(foo) == 1:
+		return foo[0]
+	return foo

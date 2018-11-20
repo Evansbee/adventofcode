@@ -2,8 +2,8 @@ from helpers import *
 
 def problem1(problem_input):
 	print(problem_input)
-	all_of_them.helpers_working()
 	pass
 	
 def problem2(problem_input):
+	print('Lets do', __file__,'problem 2')
 	pass
