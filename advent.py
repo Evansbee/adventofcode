@@ -59,18 +59,19 @@ if __name__ == '__main__':
 	init()
 	day, year = get_most_recent_day_year()
 
-	if sys.argv[1]:
+
+	if len(sys.argv) > 2:
 		day = sys.argv[1]
 		print(f"Forcing Day {day}...")
 
-	if sys.argv[2]:
+	if len(sys.argv) > 3:
 		year = sys.argv[2]
 		print(f"Forcing Year {year}...")
 
 
 	try:
+		print(f'AOC {year} Day {day}')
 		problem_input = all_of_them.only_or_array(get_input(day,year))
-		print(problem_input)
 		aoc_module = importlib.import_module(f'aoc{year}.day{day}')
 		result1 = aoc_module.problem1(problem_input)
 		result2 = aoc_module.problem2(problem_input)
@@ -84,7 +85,7 @@ if __name__ == '__main__':
 		else:
 			print(Fore.RED + f'Day {day} Problem 2 Result: ' + Fore.RESET + 'unknown...')
 
-	except:
+	except Exception as e:
+		print(e)
 		build_template_for_year_day(year,day)
-		print("caught")
 		
