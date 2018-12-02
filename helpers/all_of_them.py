@@ -17,3 +17,6 @@ def only_or_array(foo):
 	if len(foo) == 1:
 		return foo[0]
 	return foo
+
+def get_numbers(in_string):
+	return [int(x) for x in re.findall('[-+]?[0-9]+',in_string)]
