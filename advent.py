@@ -6,6 +6,7 @@ import datetime
 from colorama import init, Fore, Back, Style
 from helpers import *
 import sys
+import time
 
 
 def build_template_for_year_day(year, day):
@@ -60,11 +61,11 @@ if __name__ == '__main__':
 	day, year = get_most_recent_day_year()
 
 
-	if len(sys.argv) > 2:
+	if len(sys.argv) >= 2:
 		day = sys.argv[1]
 		print(f"Forcing Day {day}...")
 
-	if len(sys.argv) > 3:
+	if len(sys.argv) >= 3:
 		year = sys.argv[2]
 		print(f"Forcing Year {year}...")
 
@@ -73,15 +74,22 @@ if __name__ == '__main__':
 		print(f'AOC {year} Day {day}')
 		problem_input = all_of_them.only_or_array(get_input(day,year))
 		aoc_module = importlib.import_module(f'aoc{year}.day{day}')
+		
+		t0 = time.time()
 		result1 = aoc_module.problem1(problem_input)
-		result2 = aoc_module.problem2(problem_input)
+		t1 = time.time()
+
+		result1_time = t1 - t0
 		if result1:
-			print(Fore.GREEN + f'Day {day} Problem 1 Result: ' + Fore.RESET + f'{result1}')
+			print(Fore.GREEN + f'Day {day} Problem 1 Result ' + Fore.BLUE + f'(Computed in {result1_time:0.2f}s): ' + Fore.RESET + f'{result1}')
 		else:
 			print(Fore.RED + f'Day {day} Problem 1 Result: ' + Fore.RESET + 'unknown...')
-
+		t0 = time.time()
+		result2 = aoc_module.problem2(problem_input)
+		t1 = time.time()
+		result1_time = t1 - t0
 		if result2:
-			print(Fore.GREEN + f'Day {day} Problem 2 Result: ' + Fore.RESET + f'{result2}')
+			print(Fore.GREEN + f'Day {day} Problem 2 Result ' + Fore.BLUE + f'(Computed in {result1_time:0.2f}s): ' + Fore.RESET + f'{result2}')
 		else:
 			print(Fore.RED + f'Day {day} Problem 2 Result: ' + Fore.RESET + 'unknown...')
 

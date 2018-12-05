@@ -12,11 +12,11 @@ def wrap_to_count(the_string, characters):
 		idx += characters
 	return the_string
 	
-
+#get rid of the n
 def only_or_array(foo):
 	if len(foo) == 1:
-		return foo[0]
-	return foo
+		return foo[0].strip('\n')
+	return [x.strip('\n') for x in foo]
 
 def get_numbers(in_string):
 	return [int(x) for x in re.findall('[-+]?[0-9]+',in_string)]
