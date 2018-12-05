@@ -1,18 +1,16 @@
 from helpers import *
 
 def react(polymer):
-	removed_count = None
-	while removed_count == None or removed_count > 0:
-		removed_count = 0
-		i = 0
-		polymer_len = len(polymer)
-		while i < polymer_len-1:
-			if polymer[i].lower() == polymer[i+1].lower() and polymer[i] != polymer[i+1]:
-				polymer = polymer[0:i] + polymer[i+2:]
-				polymer_len -= 2
-				removed_count += 1
-			else:
-				i = 0
+	i = 0
+	polymer_len = len(polymer)
+	while i < polymer_len-1:
+		if polymer[i].lower() == polymer[i+1].lower() and polymer[i] != polymer[i+1]:
+			polymer = polymer[0:i] + polymer[i+2:]
+			polymer_len -= 2
+			if i != 0:
+				i -= 1
+		else:
+			i += 1
 	return polymer
 
 def problem1(problem_input):

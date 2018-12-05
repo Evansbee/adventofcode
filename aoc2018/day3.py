@@ -32,4 +32,4 @@ def problem2(problem_input):
 		for c in bad_square:
 			invalid_claims.add(c)
 	
-	return all_claims.difference(invalid_claims)
+	return list(all_claims.difference(invalid_claims))[0]
