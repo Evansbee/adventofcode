@@ -47,10 +47,11 @@ def problem2(problem_input):
 	time = 0
 	working_set = dict()
 	while len(presteps) > 0:
+		
 		for start in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-			if start in presteps and len(presteps[start])==0 and len(working_set) < 5:
+			if start in presteps and len(presteps[start])==0 and len(working_set) < 5 and start not in working_set:
 				working_set[start] = ord(start) - ord('A') + 61
-
+		print(f'time: {time} 1: {working_set}')
 		lowest = min(working_set.items(), key = lambda x: x[1])
 		time += lowest[1]
 		working_set.pop(lowest[0],None)
@@ -61,7 +62,7 @@ def problem2(problem_input):
 			if lowest[0] in v:
 				v.remove(lowest[0])
 		presteps.pop(lowest[0], None)
-		
+		print(f'time: {time} 1: {working_set}')
 	return time	
 
 	#SetTimeToCompleteForAllCompletables

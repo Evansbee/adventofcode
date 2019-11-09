@@ -88,7 +88,7 @@ if __name__ == '__main__':
 		result2 = aoc_module.problem2(problem_input)
 		t1 = time.time()
 		result1_time = t1 - t0
-		if result2:
+		if result2 is not None:
 			print(Fore.GREEN + f'Day {day} Problem 2 Result ' + Fore.BLUE + f'(Computed in {result1_time:0.2f}s): ' + Fore.RESET + f'{result2}')
 		else:
 			print(Fore.RED + f'Day {day} Problem 2 Result: ' + Fore.RESET + 'unknown...')
