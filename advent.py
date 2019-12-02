@@ -7,7 +7,7 @@ from colorama import init, Fore, Back, Style
 from helpers import *
 import sys
 import time
-
+import os
 
 def build_template_for_year_day(year, day):
 	pass
@@ -47,13 +47,17 @@ def get_problem_text(day, year):
 	
 
 def get_input(day, year):
-	url = f'https://adventofcode.com/{year}/day/{day}/input'
-	res = request('GET',url,cookies=config)
-	with open(f'inputs/aoc{year}day{day}.in','wb') as f:
-		for chunk in res.iter_content(chunk_size=128):
-			f.write(chunk)
-	with open(f'inputs/aoc{year}day{day}.in','r') as f:
-		return f.readlines()
+	if os.path.exists(f'inputs/aoc{year}day{day}.in'):
+		with open(f'inputs/aoc{year}day{day}.in', 'r') as f:
+			return f.readlines()
+	else:
+		url = f'https://adventofcode.com/{year}/day/{day}/input'
+		res = request('GET',url,cookies=config)
+		with open(f'inputs/aoc{year}day{day}.in','wb') as f:
+			for chunk in res.iter_content(chunk_size=128):
+				f.write(chunk)
+		with open(f'inputs/aoc{year}day{day}.in','r') as f:
+			return f.readlines()
 
 
 if __name__ == '__main__':
