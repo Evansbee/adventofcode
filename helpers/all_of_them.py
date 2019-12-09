@@ -1,9 +1,10 @@
 import re
-
+from enum import IntEnum
+import pdb
 def helpers_working():
 	print("Helpers are working")
-	
-	
+
+
 def wrap_to_count(the_string, characters):
 	start = 0
 	idx = start + characters
@@ -13,7 +14,7 @@ def wrap_to_count(the_string, characters):
 		the_string = the_string[:idx] + '\n' + the_string[idx+1:]
 		idx += characters
 	return the_string
-	
+
 #get rid of the n
 def only_or_array(foo):
 	if len(foo) == 1:
@@ -22,3 +23,217 @@ def only_or_array(foo):
 
 def get_numbers(in_string):
 	return [int(x) for x in re.findall('[-+]?[0-9]+',in_string)]
+
+
+
+
+
+
+class Computer:
+
+	class OPCODE(IntEnum):
+		ADD = 1
+		MULT = 2
+		INPUT = 3
+		OUTPUT = 4
+		JTRUE = 5
+		JFALSE = 6
+		LT = 7
+		EQ = 8
+		SETBASE = 9
+		HALT = 99
+
+	class INSTRUCTION_MODE(IntEnum):
+		POSITION = 0
+		IMMEDIATE = 1
+		RELATIVE = 2
+
+	OPCODE_SIZE = {
+		OPCODE.ADD:4,
+		OPCODE.MULT:4,
+		OPCODE.INPUT:2,
+		OPCODE.OUTPUT:2,
+		OPCODE.JTRUE:3,
+		OPCODE.JFALSE:3,
+		OPCODE.LT:4,
+		OPCODE.EQ:4,
+		OPCODE.SETBASE:2,
+		OPCODE.HALT:1
+	}
+
+	def __init__(self, memory, input_queue = []):
+		self.initial_state = memory.copy()
+		self.initial_input_queue = input_queue.copy()
+		self.reset()
+
+	def read_mem(self, address):
+		if address < len(self.memory):
+			return self.memory[address]
+		return 0
+
+	def write_memory(self, address, value):
+		if address < len(self.memory):
+			self.memory[address] = value
+		else:
+			self.memory.extend([0] * (1 + address - len(self.memory)))
+			self.memory[address] = value
+
+
+
+	def set_input(self, noun, verb):
+		self.memory[1] = noun
+		self.memory[2] = verb
+
+	def get_op_value(self, val):
+		if Computer.INSTRUCTION_MODE.IMMEDIATE:
+			return val
+		else:
+			return self.memory[val]
+
+
+	def reset(self):
+		self.memory = self.initial_state.copy()
+		self.input_queue = self.initial_input_queue.copy()
+		self.output_queue = []
+		self.pc = 0
+		self.halted = False
+		self.awaiting_input = False
+		self.instruction_mode = Computer.INSTRUCTION_MODE.POSITION
+		self.base = 0
+
+
+	def get_output(self):
+		return self.memory[0]
+
+
+	def run_step(self, trace = False):
+		self.awaiting_input = False
+		if not self.halted:
+			instruction = self.memory[self.pc]
+			op = instruction % 100
+			positionals = [(instruction // (10**i)) % 10 for i in range(2,5)]
+
+			args = []
+			arg_values = []
+			arg_addrs = []
+
+			class Param:
+				def __init__(self, address, value):
+					self.a = address
+					self.v = value
+
+			params = []
+
+			for i in range(Computer.OPCODE_SIZE[op] - 1):
+				if positionals[i] == Computer.INSTRUCTION_MODE.POSITION:
+					arg_addrs += [self.read_mem(self.pc + 1 + i)]
+				elif positionals[i] == Computer.INSTRUCTION_MODE.RELATIVE:
+					arg_addrs += [self.base + self.read_mem(self.pc + 1 + i)]
+				else:
+					arg_addrs += [self.pc + 1 + i]
+				arg_values += [self.read_mem(arg_addrs[-1])]
+				args += [self.read_mem(arg_addrs[-1])]
+
+
+			if trace:
+				print(f'PC: {self.pc} BASE: {self.base} OPCODE: {self.memory[self.pc]} POSITIONALS: {positionals} ARGS: {args}')
+
+
+			if op == Computer.OPCODE.ADD:
+				#add
+				self.write_memory(arg_addrs[-1], args[0] + args[1])
+
+				self.pc += Computer.OPCODE_SIZE[op]
+
+
+			elif op == Computer.OPCODE.MULT:
+				#mult
+				self.write_memory(arg_addrs[-1], args[0] * args[1])
+				self.pc += Computer.OPCODE_SIZE[op]
+
+
+			elif op == Computer.OPCODE.HALT:
+				self.halted = True
+				self.pc += Computer.OPCODE_SIZE[op]
+
+
+			elif op == Computer.OPCODE.INPUT:
+				if len(self.input_queue) > 0:
+					self.write_memory(arg_addrs[-1], self.input_queue[0])
+					self.input_queue = self.input_queue[1:]
+				else:
+					self.awaiting_input = True
+					return
+				self.pc += Computer.OPCODE_SIZE[op]
+
+
+			elif op == Computer.OPCODE.OUTPUT:
+				#print(args[0])
+				self.output_queue += [args[0]]
+				self.pc += Computer.OPCODE_SIZE[op]
+
+
+			elif op == Computer.OPCODE.JTRUE:
+				if args[0] != 0:
+					self.pc = args[1]
+				else:
+					self.pc += Computer.OPCODE_SIZE[op]
+
+
+			elif op == Computer.OPCODE.JFALSE:
+				if args[0] == 0:
+					self.pc = args[1]
+				else:
+					self.pc += Computer.OPCODE_SIZE[op]
+
+
+			elif op == Computer.OPCODE.LT:
+				if args[0] < args[1]:
+					self.write_memory(arg_addrs[-1],1)
+				else:
+					self.write_memory(arg_addrs[-1],0)
+				self.pc += Computer.OPCODE_SIZE[op]
+
+
+			elif op == Computer.OPCODE.EQ:
+				if args[0] == args[1]:
+					self.write_memory(arg_addrs[-1],1)
+				else:
+					self.write_memory(arg_addrs[-1],0)
+				self.pc += Computer.OPCODE_SIZE[op]
+
+			elif op == Computer.OPCODE.SETBASE:
+				self.base += args[0]
+				self.pc += Computer.OPCODE_SIZE[op]
+
+			else:
+				self.halted = True
+				return
+
+
+	def dump(self):
+		print(f"Program Counter - {self.pc}")
+		print(f"Halted ---------- {self.halted}")
+		print(f'Memory Dump:')
+		print(f'        ',end='')
+		for i in range(16):
+			print(f'       0x{i:02x}',end= '')
+		print()
+		print('-'*184)
+		rows = (len(self.memory) // 16) + 1
+		for row in range(rows):
+			start_address = row * 16
+			print(f'0x{start_address:04X} | ',end='')
+			end_address = start_address + 16
+			if end_address > len(self.memory):
+				end_address = len(self.memory)
+
+			for i in range(start_address, end_address):
+				print(f'{self.memory[i]:10}',end=' ')
+			print()
+
+	def run(self, trace = False):
+		self.awaiting_input = False
+		while not self.halted and not self.awaiting_input:
+			self.run_step(trace)
+

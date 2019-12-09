@@ -22,7 +22,7 @@ def get_most_recent_day_year():
 	if now.month < 12:
 		year = year - 1
 		day = 25
-	
+
 	if now.day > 25:
 		day = 25
 
@@ -42,9 +42,9 @@ def get_problem_text(day, year):
 			f.write(article.text)
 			output += article.text
 
-		
+
 		return all_of_them.wrap_to_count(output,120)
-	
+
 
 def get_input(day, year):
 	if os.path.exists(f'inputs/aoc{year}day{day}.in'):
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 		print(f'AOC {year} Day {day}')
 		problem_input = all_of_them.only_or_array(get_input(day,year))
 		aoc_module = importlib.import_module(f'aoc{year}.day{day}')
-		
+
 		t0 = time.time()
 		result1 = aoc_module.problem1(problem_input)
 		t1 = time.time()
@@ -99,5 +99,8 @@ if __name__ == '__main__':
 
 	except Exception as e:
 		print(e)
+		exc_type, exc_obj, exc_tb = sys.exc_info()
+		fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+		print(exc_type, fname, exc_tb.tb_lineno)
 		build_template_for_year_day(year,day)
-		
+
