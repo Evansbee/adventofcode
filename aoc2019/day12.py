@@ -1,8 +1,9 @@
 from helpers import *
 
+
 def problem1(problem_input):
-	return None
+    print(problem_input)
 
 
 def problem2(problem_input):
-	return None
+    return None
