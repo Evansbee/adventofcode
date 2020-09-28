@@ -8,6 +8,7 @@ from helpers import *
 import sys
 import time
 import os
+import pdb
 
 
 def build_template_for_year_day(year, day):
@@ -80,6 +81,28 @@ if __name__ == "__main__":
         print(f"AOC {year} Day {day}")
         problem_input = all_of_them.only_or_array(get_input(day, year))
         aoc_module = importlib.import_module(f"aoc{year}.day{day}")
+
+
+        if 'test' in dir(aoc_module):
+            t0 = time.time()
+            result_test = aoc_module.test()
+            t1 = time.time()
+            test_time = t1 - t0
+            if result_test:
+                print(
+                    Fore.GREEN
+                    + f"Day {day} Test Result "
+                    + Fore.BLUE
+                    + f"(Computed in {test_time:0.2f}s): "
+                    + Fore.RESET
+                    + f"{result_test}"
+                )
+            else:
+                print(
+                    Fore.RED + f"Day {day} Test Result: " + Fore.RESET + "unknown..."
+                )
+
+
 
         t0 = time.time()
         result1 = aoc_module.problem1(problem_input)
