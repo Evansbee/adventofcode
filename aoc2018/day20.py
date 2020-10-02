@@ -1,158 +1,194 @@
 from helpers import *
+from random import randint
+import sys
+sys.setrecursionlimit(10000)
 
-
-class Tree:
-    def __init__(self, parent = None, remaining = ""):
-        self.remaining = remaining
-        self.commands = ""
-        self.children = []
+DIRECTIONS = {
+                'N': (0,1), 'S':(0,-1), 'E':(1,0),'W':(-1,0)
+            }
+class Node:
+    next_id = 0
+    def __init__(self, data, parent=None):
+        self.data = data
         self.parent = parent
 
-    def append_path(self, char):
+        self.max_path = 0
+        self.distance_from_start = 0
+        self.children = []
+        self.closing_item = None
+        self.descendents = []
+        self.id = Node.next_id
+        self.potential_node_locations_with_distance = dict()
+        Node.next_id += 1
+
+    def __len__(self):
+        if self.data in '()|^$':
+            return 0
+        return len(self.data)
+
+    def is_control(self):
+        return self.data in ('()|^$')
+
+    def give_child_to_dead_ends(self, child):
+        for c in self.descendents:
+            if len(c.children) == 0:
+                for k,v in c.potential_node_locations_with_distance.items():
+                    if k not in child.potential_node_locations_with_distance or v < child.potential_node_locations_with_distance[k]:
+                        child.potential_node_locations_with_distance[k] = v
+                c.children = [child]
+        self.closing_item = child
+        self.max_path = self.max_len_sub_paths(True)
+
+
+
+
+    def print_all_paths(self, start=''):
+        paths = []
+        my_contribution = self.data.strip('$^()|')
         if len(self.children) == 0:
-            self.commands += char
-        for c in self.children:
-            c.append_path(char)
+            return [start + my_contribution]
+        else:
+            for c in self.children:
+                paths += c.print_all_paths(start + my_contribution)
+        return paths
 
-    def make_string(self, indent=0):
-        retval = (" " * indent) + f"{self.commands}\n"
-        for c in self.children:
-            retval += c.make_string(indent + 2)
-        return retval
 
-    def __str__(self):
-        return self.make_string()
+    def max_len_sub_paths(self, force_start = False):
+        if len(self.data) > 0 and self.data in '(^' and not force_start:
+            if self.closing_item is not None:
+                path_lengths = [x.max_len_sub_paths() for x in self.closing_item.children]
+                if 0 in path_lengths:
+                    return self.max_path
+                return self.max_path + max(path_lengths + [0])
+
+        path_lengths = [x.max_len_sub_paths() for x in self.children]
+        if 0 in path_lengths:
+            return len(self)
+        return len(self) + max(path_lengths + [0])
+
+    def map_rooms_to_distance(self, room_distance = None, current_distance = None, current_room = None):
+        starting = room_distance == None
+        if room_distance == None:
+            room_distance = dict()
+            current_distance = 0
+            current_room = (0,0)
+        #print(self)
+        if not self.is_control():
+            thing = {
+                'N': (0,1), 'S':(0,-1), 'E':(1,0),'W':(-1,0)
+            }
+            current_distance += 1
+            current_room = (current_room[0] + thing[self.data][0],current_room[1] + thing[self.data][1])
+
+            if current_room not in room_distance or room_distance[current_room] > current_distance:
+                room_distance[current_room] = current_distance
+
+        for c in self.children:
+            c.map_rooms_to_distance(room_distance,current_distance,current_room)
+
+        if starting:
+            return room_distance
+
+
 
     def __repr__(self):
-        return self.make_string()
-
-    def make_all_full_paths(self):
-
-        my_list = []
-        for c in self.children:
-            my_list += c.make_all_full_paths()
-
-        if len(my_list) == 0:
-            my_list = [""]
+        return f'NODE: {self.data} Children: {[x.data for x in self.children]} ({self.id})'
 
 
-        for i,l in enumerate(my_list):
-            my_list[i] = self.commands + l
+def get_next_token_from_string(input_string):
+    return input_string[0], input_string[1:]
+    if input_string[0] in '()|$^':
+        return input_string[0], input_string[1:]
+    else:
+        token = ''
+        while input_string[0] not in '()|$^':
+            token = token + input_string[0]
+            input_string = input_string[1:]
+        return token, input_string
 
-        return my_list
+def make_graph(input_string):
+    all_nodes = []
+    head = None
+    current = None
+    stack = []
+    initial_string_length = len(input_string)
+    big_list = []
+    while len(input_string) > 0:
+        token, input_string = get_next_token_from_string(input_string)
+        #print(f'Progress: {((initial_string_length-len(input_string))/initial_string_length)*100:2f}% Stack Depth: {len(stack)} Token: {token}')
+        if token == '^':
+            head = Node('^')
+            head.potential_node_locations_with_distance[(0,0)] = 0
 
-    def make_sibling(self, remaining = ""):
-        sib = Tree(self.parent, remaining)
-        self.parent.children += [sib]
-        return sib
+            current = head
+            current.min_prefix = 0
+            current.min_prefix = 0
+            stack = [head]
 
-    def dirs_left(self):
-        if not self.parent:
-            return len(self.remaining)
+        elif token == '(':
+            current.children += [Node('(')]
+            stack[-1].descendents += [current.children[-1]]
+            stack += [current.children[-1]]
+            current.children[-1].potential_node_locations_with_distance = current.potential_node_locations_with_distance.copy()
+            current = current.children[-1]
+
+
+
+        elif token == ')':
+            temp = Node(')')
+            stack[-1].give_child_to_dead_ends(temp)
+
+            stack = stack[:-1]
+            current = temp
+            stack[-1].descendents += [current]
+
+        elif token == '|':
+            stack[-1].children += [Node('')]
+            current = stack[-1].children[-1]
+            current.potential_node_locations_with_distance = stack[-1].potential_node_locations_with_distance.copy()
+            stack[-1].descendents += [current]
+        elif token == '$':
+            temp = Node('$')
+            stack[-1].give_child_to_dead_ends(temp)
+            return head, all_nodes
         else:
-            return self.parent.dirs_left()
+            current.children += [Node(token)]
+            for k,v in current.potential_node_locations_with_distance.items():
+                new_location = (k[0] + DIRECTIONS[token][0], k[1] + DIRECTIONS[token][1])
+                current.children[-1].potential_node_locations_with_distance[new_location] = v + 1
 
-    def get_next_dir(self):
+            current = current.children[-1]
+            stack[-1].descendents += [current]
+            all_nodes += [current]
 
-        if not self.parent:
-            char = self.remaining[0]
-            self.remaining = self.remaining[1:]
-            return char
-        else:
-            return self.parent.get_next_dir()
+    return head, all_nodes
 
 
-    def populate_down(self):
-        while True:
-            if self.dirs_left() == 0:
-                return
 
-            char = self.get_next_dir()
-            #print(f'Processing: {char}')
 
-            if char not in "^(|)$":
-                #print('Appending to self')
-                self.append_path(char)
-
-            elif char == "(":
-                #print('Adding Child')
-                if len(self.children) > 0:
-                    pass
-                else:
-                    self.children += [Tree(self)]
-                    self.children[-1].populate_down()
-            elif char == ")":
-                return
-            elif char == "|":
-                #print('spawning sibling')
-                sib = self.make_sibling()
-                sib.populate_down()
-                return
-            elif char == "^":
-                pass
-            elif char == '$':
-                return
-
-'''
-add self
-add self
-(
-    add child
-    add to child
-    |
-    get child
-    addd
-    (
-        make child deal with it
-    )
-    add child
-    add child
-)
-add self -> push down
-'''
 
 
 
 def test():
 
-
-
-
-
-    test_input = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$"
-    head = Tree(None, test_input)
-    head.populate_down()
-    print("TEST INPUT:",test_input)
-    [print(l) for l in head.make_all_full_paths()]
-    print(max([len(l) for l in head.make_all_full_paths()]))
-
-
-    test_input = "^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$"
-    head = Tree(None, test_input)
-    head.populate_down()
-    print("TEST INPUT:",test_input)
-    [print(l) for l in head.make_all_full_paths()]
-    print(max([len(l) for l in head.make_all_full_paths()]))
-
-
-    test_input = "^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$"
-    head = Tree(None, test_input)
-    head.populate_down()
-    print("TEST INPUT:",test_input)
-    [print(l) for l in head.make_all_full_paths()]
-    print(max([len(l) for l in head.make_all_full_paths()]))
-
-    return max([len(l) for l in head.make_all_full_paths()])
+    return None
 
 def problem1(problem_input):
-    return None
-    head = Tree(None, problem_input)
-    head.populate_down()
-    #[print(l) for l in head.make_all_full_paths()]
-    return max([len(l) for l in head.make_all_full_paths()])
+    head , _ = make_graph(problem_input)
+    return head.max_path
 
 
 
 def problem2(problem_input):
-    print("Lets do", __file__, "problem 2")
-    pass
+    head , all_nodes = make_graph(problem_input)
+    print(all_nodes)
+    map_to_nodes = dict()
+
+    for node in all_nodes:
+        for k,v in node.potential_node_locations_with_distance.items():
+            if k not in map_to_nodes or map_to_nodes[k] > v:
+                map_to_nodes[k] = v
+
+    map_to_nodes = { k:v for (k,v) in map_to_nodes.items() if v >= 1000}
+
+    return len(map_to_nodes.keys())
