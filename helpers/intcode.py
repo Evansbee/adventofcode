@@ -1,44 +1,42 @@
-
 import colorama
 from enum import IntEnum
 
 
 class OPCODE(IntEnum):
-        ADD = 1
-        MULT = 2
-        INPUT = 3
-        OUTPUT = 4
-        JTRUE = 5
-        JFALSE = 6
-        LT = 7
-        EQ = 8
-        SETBASE = 9
-        NOP = 98 #Custom
-        HALT = 99
+    ADD = 1
+    MULT = 2
+    INPUT = 3
+    OUTPUT = 4
+    JTRUE = 5
+    JFALSE = 6
+    LT = 7
+    EQ = 8
+    SETBASE = 9
+    NOP = 98  # Custom
+    HALT = 99
 
 
 mnemonic_to_opcode = {
-        "ADD": OPCODE.ADD,
-        "MULT": OPCODE.MULT,
-        "INPUT": OPCODE.INPUT,
-        "OUTPUT": OPCODE.OUTPUT,
-        "JT": OPCODE.JTRUE,
-        "JF": OPCODE.JFALSE,
-        "LT": OPCODE.LT,
-        "EQ": OPCODE.EQ,
-        "REBASE": OPCODE.SETBASE,
-        "NOP":OPCODE.NOP,
-        "HALT": OPCODE.HALT,
-    }
+    "ADD": OPCODE.ADD,
+    "MULT": OPCODE.MULT,
+    "INPUT": OPCODE.INPUT,
+    "OUTPUT": OPCODE.OUTPUT,
+    "JT": OPCODE.JTRUE,
+    "JF": OPCODE.JFALSE,
+    "LT": OPCODE.LT,
+    "EQ": OPCODE.EQ,
+    "REBASE": OPCODE.SETBASE,
+    "NOP": OPCODE.NOP,
+    "HALT": OPCODE.HALT,
+}
 
 opcode_to_mnemonic = {v: k for k, v in mnemonic_to_opcode.items()}
 
 
-
 class INSTRUCTION_MODE(IntEnum):
-        POSITION = 0
-        IMMEDIATE = 1
-        RELATIVE = 2
+    POSITION = 0
+    IMMEDIATE = 1
+    RELATIVE = 2
 
 
 mode_printing = {
@@ -61,8 +59,8 @@ OPCODE_SIZE = {
     OPCODE.HALT: 1,
 }
 
-class IntcodeComputer:
 
+class IntcodeComputer:
     def decode_instruction(self, position):
         instruction = self.read_mem(position)
         opcode = instruction % 100
@@ -73,8 +71,7 @@ class IntcodeComputer:
             for i in range(2, 2 + OPCODE_SIZE[opcode] - 1)
         ]
         params = [
-            self.read_mem(position + i + 1)
-            for i in range(OPCODE_SIZE[opcode] - 1)
+            self.read_mem(position + i + 1) for i in range(OPCODE_SIZE[opcode] - 1)
         ]
         return opcode, positionals, params
 
@@ -85,9 +82,7 @@ class IntcodeComputer:
             dasm_info = {
                 "start": position,
                 "size": OPCODE_SIZE[op],
-                "raw": [
-                    self.read_mem(position + i) for i in range(OPCODE_SIZE[op])
-                ],
+                "raw": [self.read_mem(position + i) for i in range(OPCODE_SIZE[op])],
                 "inst": opcode_to_mnemonic[op],
                 "params": [],
                 "pcmatch": position == self.pc,
@@ -149,7 +144,7 @@ class IntcodeComputer:
 
         return retval[:-1]
 
-    def __init__(self, memory, input_queue=[], interactive = False):
+    def __init__(self, memory, input_queue=[], interactive=False):
         self.initial_state = memory.copy()
         self.initial_input_queue = input_queue.copy()
         self.breakpoints = []
@@ -220,9 +215,6 @@ class IntcodeComputer:
                 arg_values += [self.read_mem(arg_addrs[-1])]
                 args += [self.read_mem(arg_addrs[-1])]
 
-
-
-
             self.pc += OPCODE_SIZE[op]
             if op == OPCODE.ADD:
                 self.write_memory(arg_addrs[-1], args[0] + args[1])
@@ -242,9 +234,9 @@ class IntcodeComputer:
                 self.output_queue += [args[0]]
                 if self.interactive:
                     if args[0] < 255:
-                        print(chr(args[0]),end='')
+                        print(chr(args[0]), end="")
                     else:
-                        print(args[0],end='')
+                        print(args[0], end="")
             elif op == OPCODE.JTRUE:
                 if args[0] != 0:
                     self.pc = args[1]
@@ -252,7 +244,7 @@ class IntcodeComputer:
                 if args[0] == 0:
                     self.pc = args[1]
             elif op == OPCODE.LT:
-                self.write_memory(arg_addrs[-1], int(args[0]< args[1]))
+                self.write_memory(arg_addrs[-1], int(args[0] < args[1]))
             elif op == OPCODE.EQ:
                 self.write_memory(arg_addrs[-1], int(args[0] == args[1]))
             elif op == OPCODE.SETBASE:

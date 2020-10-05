@@ -82,8 +82,7 @@ if __name__ == "__main__":
         problem_input = all_of_them.only_or_array(get_input(day, year))
         aoc_module = importlib.import_module(f"aoc{year}.day{day}")
 
-
-        if 'test' in dir(aoc_module):
+        if "test" in dir(aoc_module):
             t0 = time.time()
             result_test = aoc_module.test()
             t1 = time.time()
@@ -98,11 +97,7 @@ if __name__ == "__main__":
                     + f"{result_test}"
                 )
             else:
-                print(
-                    Fore.RED + f"Day {day} Test Result: " + Fore.RESET + "unknown..."
-                )
-
-
+                print(Fore.RED + f"Day {day} Test Result: " + Fore.RESET + "unknown...")
 
         t0 = time.time()
         result1 = aoc_module.problem1(problem_input)

@@ -15,7 +15,6 @@ def manhattan_distance(p1, p2):
     return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
 
 
-
 def GetAllAdjacentPositions(grid, target):
     adjacents = []
     for k, v in grid.items():
@@ -25,10 +24,12 @@ def GetAllAdjacentPositions(grid, target):
                     adjacents += [test_p]
     return adjacents
 
+
 def position_clear(world, position):
-    if position in world and world[position] in '.O':
+    if position in world and world[position] in ".O":
         return True
     return False
+
 
 def a_star(s, e, world):
     """
@@ -56,7 +57,9 @@ def a_star(s, e, world):
 
         open_set.remove(current)
         closed_set.add(current)
-        for neighbor in [x for x in neighbor4(current) if position_clear(world,x) or x == e]:
+        for neighbor in [
+            x for x in neighbor4(current) if position_clear(world, x) or x == e
+        ]:
 
             if neighbor in closed_set:
                 continue
@@ -85,72 +88,58 @@ def sort_position(position1, position2):
     return (position1[0] > position2[0]) - (position1[0] < position2[0])
 
 
-
-
-def print_grid(grid, robot_position, clear = False):
+def print_grid(grid, robot_position, clear=False):
     x_s = [p[0] for p in grid.keys()]
     y_s = [p[1] for p in grid.keys()]
 
     if clear:
-        _ = os.system('clear')
-    for y in range(min(y_s)-10, max(y_s)+10):
-        for x in range(min(x_s)-10, max(x_s)+10):
-            if (x,y) == robot_position:
-                print('@',end='')
+        _ = os.system("clear")
+    for y in range(min(y_s) - 10, max(y_s) + 10):
+        for x in range(min(x_s) - 10, max(x_s) + 10):
+            if (x, y) == robot_position:
+                print("@", end="")
             else:
-                print(grid.get((x,y),' '),end='')
+                print(grid.get((x, y), " "), end="")
         print()
 
+
 def problem1(problem_input):
-    problem_input = [int(x) for x in problem_input.split(',')]
+    problem_input = [int(x) for x in problem_input.split(",")]
     cpu = IntcodeComputer(problem_input)
 
     cpu.run()
 
-
     grid = dict()
-    robot_position = 0,0
-    grid[robot_position] = '.'
+    robot_position = 0, 0
+    grid[robot_position] = "."
 
     unknown_positions = list(neighbor4(robot_position))
 
     found_o2 = False
     while len(unknown_positions) > 0:
-        #get neighbors, add all unexplored to queue
-        #get closest list item
-        #move to there
+        # get neighbors, add all unexplored to queue
+        # get closest list item
+        # move to there
 
-
-        reverse_grid_move = {
-            (0,-1): 1,
-            (-1,0): 4,
-            (0,1):  2,
-            (1,0):  3
-        }
+        reverse_grid_move = {(0, -1): 1, (-1, 0): 4, (0, 1): 2, (1, 0): 3}
 
         reverse_grid_move_name = {
-            (0,-1): 'NORTH',
-            (-1,0): 'WEST',
-            (0,1): 'SOUTH',
-            (1,0): 'EAST'
+            (0, -1): "NORTH",
+            (-1, 0): "WEST",
+            (0, 1): "SOUTH",
+            (1, 0): "EAST",
         }
-
-
 
         target = unknown_positions.pop(0)
         if target in grid:
             continue
 
-        path = a_star(robot_position,target,grid)
-
-
+        path = a_star(robot_position, target, grid)
 
         step = path[1][0] - robot_position[0], path[1][1] - robot_position[1]
 
-
         if path[1] != target:
-            unknown_positions.insert(0,target)
-
+            unknown_positions.insert(0, target)
 
         cpu.input_queue += [reverse_grid_move[step]]
         cpu.run()
@@ -160,12 +149,12 @@ def problem1(problem_input):
         potential_robot_space = robot_position[0] + step[0], robot_position[1] + step[1]
 
         if result == 0:
-            grid[potential_robot_space] = '#'
+            grid[potential_robot_space] = "#"
         elif result == 1:
-            grid[potential_robot_space] = '.'
+            grid[potential_robot_space] = "."
             robot_position = potential_robot_space
         elif result == 2:
-            grid[potential_robot_space] = 'O'
+            grid[potential_robot_space] = "O"
             robot_position = potential_robot_space
             o2_position = robot_position
 
@@ -173,63 +162,50 @@ def problem1(problem_input):
             if p not in grid:
                 unknown_positions += [p]
 
-        #print_grid(grid,robot_position, True)
+        # print_grid(grid,robot_position, True)
 
         unknown_positions.sort(key=cmp_to_key(sort_position))
 
-    return len(a_star((0,0),o2_position,grid)) - 1
-
+    return len(a_star((0, 0), o2_position, grid)) - 1
 
 
 def problem2(problem_input):
-    problem_input = [int(x) for x in problem_input.split(',')]
+    problem_input = [int(x) for x in problem_input.split(",")]
     cpu = IntcodeComputer(problem_input)
 
     cpu.run()
 
-
     grid = dict()
-    robot_position = 0,0
-    grid[robot_position] = '.'
+    robot_position = 0, 0
+    grid[robot_position] = "."
 
     unknown_positions = list(neighbor4(robot_position))
 
     found_o2 = False
     while len(unknown_positions) > 0:
-        #get neighbors, add all unexplored to queue
-        #get closest list item
-        #move to there
+        # get neighbors, add all unexplored to queue
+        # get closest list item
+        # move to there
 
-
-        reverse_grid_move = {
-            (0,-1): 1,
-            (-1,0): 4,
-            (0,1):  2,
-            (1,0):  3
-        }
+        reverse_grid_move = {(0, -1): 1, (-1, 0): 4, (0, 1): 2, (1, 0): 3}
 
         reverse_grid_move_name = {
-            (0,-1): 'NORTH',
-            (-1,0): 'WEST',
-            (0,1): 'SOUTH',
-            (1,0): 'EAST'
+            (0, -1): "NORTH",
+            (-1, 0): "WEST",
+            (0, 1): "SOUTH",
+            (1, 0): "EAST",
         }
-
-
 
         target = unknown_positions.pop(0)
         if target in grid:
             continue
 
-        path = a_star(robot_position,target,grid)
-
-
+        path = a_star(robot_position, target, grid)
 
         step = path[1][0] - robot_position[0], path[1][1] - robot_position[1]
 
         if path[1] != target:
-            unknown_positions.insert(0,target)
-
+            unknown_positions.insert(0, target)
 
         cpu.input_queue += [reverse_grid_move[step]]
         cpu.run()
@@ -239,12 +215,12 @@ def problem2(problem_input):
         potential_robot_space = robot_position[0] + step[0], robot_position[1] + step[1]
 
         if result == 0:
-            grid[potential_robot_space] = '#'
+            grid[potential_robot_space] = "#"
         elif result == 1:
-            grid[potential_robot_space] = '.'
+            grid[potential_robot_space] = "."
             robot_position = potential_robot_space
         elif result == 2:
-            grid[potential_robot_space] = 'O'
+            grid[potential_robot_space] = "O"
             robot_position = potential_robot_space
             o2_position = robot_position
 
@@ -254,18 +230,17 @@ def problem2(problem_input):
 
         unknown_positions.sort(key=cmp_to_key(sort_position))
 
-
-    #grid is populated
+    # grid is populated
     minutes = 0
-    while len([k for k,v in grid.items() if v == '.']):
+    while len([k for k, v in grid.items() if v == "."]):
         minutes += 1
         new_grid = grid.copy()
-        for k,v in grid.items():
-            if v == 'O':
+        for k, v in grid.items():
+            if v == "O":
                 expansion = neighbor4(k)
                 for e in expansion:
-                    if new_grid.get(e,' ') == '.':
-                        new_grid[e] = 'O'
+                    if new_grid.get(e, " ") == ".":
+                        new_grid[e] = "O"
         grid = new_grid.copy()
 
     return minutes

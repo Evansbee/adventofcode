@@ -1,28 +1,34 @@
 from helpers import *
 
-TOOLS_FOR_TYPE = {
-    0: 'CT',
-    1: 'CN',
-    2: 'NT'
-}
-def neighbor4(p,world):
+TOOLS_FOR_TYPE = {0: "CT", 1: "CN", 2: "NT"}
+
+
+def neighbor4(p, world):
     x, y, t = p[0], p[1], p[2]
     # up left right down
 
-    at = ['C','T','N']
+    at = ["C", "T", "N"]
 
     at.remove(t)
-    spaces = [(x, y - 1,t), (x - 1, y,t), (x + 1, y,t), (x, y + 1,t),
-              (x, y,at[0]),(x, y,at[1])
-              ]
+    spaces = [
+        (x, y - 1, t),
+        (x - 1, y, t),
+        (x + 1, y, t),
+        (x, y + 1, t),
+        (x, y, at[0]),
+        (x, y, at[1]),
+    ]
 
-    spaces = [s for s in spaces if (s[0],s[1]) in world and s[2] in TOOLS_FOR_TYPE[world[(s[0],s[1])]]]
+    spaces = [
+        s
+        for s in spaces
+        if (s[0], s[1]) in world and s[2] in TOOLS_FOR_TYPE[world[(s[0], s[1])]]
+    ]
     return tuple(spaces)
 
 
 def manhattan_distance(p1, p2):
     return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
-
 
 
 def a_star(s, e, world):
@@ -38,8 +44,6 @@ def a_star(s, e, world):
     came_from = dict()
     g_score = {s: 0}
     f_score = {s: manhattan_distance(s, e)}
-
-
 
     while len(open_set) > 0:
 
@@ -78,6 +82,7 @@ def a_star(s, e, world):
             f_score[neighbor] = g_score[neighbor] + manhattan_distance(neighbor, e)
     return None, None
 
+
 def print_cave(cave, current_location):
     max_y = max([y[1] for y in cave.keys()])
     max_x = max([x[0] for x in cave.keys()])
@@ -85,45 +90,46 @@ def print_cave(cave, current_location):
     for y in range(max_y + 1):
         for x in range(max_x + 1):
             if current_location[0] == x and current_location[1] == y:
-                print('M',end='')
+                print("M", end="")
             else:
-                print('.=|'[cave[(x,y)]],end='')
+                print(".=|"[cave[(x, y)]], end="")
         print()
 
-def get_cave_system(target, depth, extra = 0):
+
+def get_cave_system(target, depth, extra=0):
     geological_index_map = dict()
     erosion_level = dict()
 
-    for x in range(0,target[0]+1 + extra):
-        geological_index_map[(x,0)] = x * 16807
-        erosion_level[(x,0)] = (geological_index_map[(x,0)] + depth) % 20183
+    for x in range(0, target[0] + 1 + extra):
+        geological_index_map[(x, 0)] = x * 16807
+        erosion_level[(x, 0)] = (geological_index_map[(x, 0)] + depth) % 20183
 
-    for y in range(1,target[1] + 1 + extra):
-        geological_index_map[(0,y)] = y * 48271
-        erosion_level[(0,y)] = (geological_index_map[(0,y)] + depth) % 20183
+    for y in range(1, target[1] + 1 + extra):
+        geological_index_map[(0, y)] = y * 48271
+        erosion_level[(0, y)] = (geological_index_map[(0, y)] + depth) % 20183
 
-
-    for x in range(1,target[0]+ 1 + extra):
-        for y in range(1,target[1] + 1 + extra):
+    for x in range(1, target[0] + 1 + extra):
+        for y in range(1, target[1] + 1 + extra):
 
             if x == target[0] and y == target[1]:
-                erosion_level[(x,y)] = (0 + depth) % 20183
+                erosion_level[(x, y)] = (0 + depth) % 20183
             else:
-                geological_index_map[(x,y)] = (erosion_level[(x-1,y)]  * erosion_level[(x,y-1)])
-                erosion_level[(x,y)] = (geological_index_map[(x,y)] + depth) % 20183
+                geological_index_map[(x, y)] = (
+                    erosion_level[(x - 1, y)] * erosion_level[(x, y - 1)]
+                )
+                erosion_level[(x, y)] = (geological_index_map[(x, y)] + depth) % 20183
 
-    cave_map = { k:(v%3) for (k,v) in erosion_level.items()}
+    cave_map = {k: (v % 3) for (k, v) in erosion_level.items()}
 
     return cave_map
 
 
 def problem1(problem_input):
-    cave_system = get_cave_system((11,722),10689)
+    cave_system = get_cave_system((11, 722), 10689)
     return sum(cave_system.values())
 
 
-
 def problem2(problem_input):
-    cave_system = get_cave_system((11,722),10689,15)
-    path, score = a_star((0,0,'T'),(11,722,'T'),cave_system)
+    cave_system = get_cave_system((11, 722), 10689, 15)
+    path, score = a_star((0, 0, "T"), (11, 722, "T"), cave_system)
     return score

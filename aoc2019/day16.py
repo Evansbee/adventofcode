@@ -1,6 +1,7 @@
-#from helpers import *
+# from helpers import *
 from itertools import chain, product
 import time
+
 
 def pattern(pattern: list, offset: int):
     pattern = [pattern] * (offset + 1)
@@ -13,36 +14,37 @@ def pattern(pattern: list, offset: int):
 
 def fft_for_digit(i, array):
     start = i
-    step = i+1
+    step = i + 1
     val = 0
 
-
-    for outer in range(start,len(array),step*4):
-        end = min(len(array),outer+step)
+    for outer in range(start, len(array), step * 4):
+        end = min(len(array), outer + step)
         val += sum(array[outer:end])
-        end = min(len(array),outer+step*3)
-        val -= sum(array[outer+step*2:end])
+        end = min(len(array), outer + step * 3)
+        val -= sum(array[outer + step * 2 : end])
 
     return abs(val) % 10
 
-def do_fft(number_list, p2 = False):
 
+def do_fft(number_list, p2=False):
 
     np = [0] * len(number_list)
     last = 0
-    for i in range(len(number_list)-1,len(number_list)//2,-1):
+    for i in range(len(number_list) - 1, len(number_list) // 2, -1):
         np[i] = (number_list[i] + last) % 10
         last = np[i]
 
     if p2:
         return np
-    for i in range(len(number_list)//2+1):
-        np[i] = fft_for_digit(i,number_list)
-
+    for i in range(len(number_list) // 2 + 1):
+        np[i] = fft_for_digit(i, number_list)
 
     return np
 
+
 sig = 0
+
+
 def problem1(problem_input):
 
     fftcount = 100
@@ -50,7 +52,7 @@ def problem1(problem_input):
 
     for _ in range(fftcount):
         problem_input = do_fft(problem_input)
-        #print("".join([str(x) for x in problem_input[600:]]))
+        # print("".join([str(x) for x in problem_input[600:]]))
 
     return "".join([str(x) for x in problem_input[:8]])
 
@@ -65,6 +67,6 @@ def problem2(problem_input):
     for x in range(fftcount):
 
         problem_input = do_fft(problem_input, True)
-        #print("".join([str(x) for x in problem_input[-50:]]))
-    #offset = "".join([str(x) for x in problem_input[:7]])
-    return "".join([str(x) for x in problem_input[offset:offset+8]])
+        # print("".join([str(x) for x in problem_input[-50:]]))
+    # offset = "".join([str(x) for x in problem_input[:7]])
+    return "".join([str(x) for x in problem_input[offset : offset + 8]])

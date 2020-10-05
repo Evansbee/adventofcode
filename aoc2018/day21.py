@@ -44,14 +44,13 @@ class CPU:
         if self.registers[self.ipr] in self.breakpoints:
 
             if self.registers[5] in self.max:
-                print("REPEASTTTS AFTER:",self.max[-1])
+                print("REPEASTTTS AFTER:", self.max[-1])
                 self.halted = True
                 return
             else:
                 self.max += [self.registers[5]]
 
-            print("potential answer:", self.registers[5] )
-
+            print("potential answer:", self.registers[5])
 
         opcode, *params = self.program[self.registers[self.ipr]]
 
@@ -129,6 +128,7 @@ class CPU:
     def __repr__(self):
         retval = f"#IP = {self.ipr} {self.registers}"
 
+
 def problem1(problem_input):
     cpu = CPU(get_numbers(problem_input.pop(0))[0])
     for line in problem_input:
@@ -139,7 +139,7 @@ def problem1(problem_input):
     cpu.breakpoints += [28]
     while not cpu.halted:
         cpu.run_step(False)
-        #print(cpu)
+        # print(cpu)
     print(cpu.registers)
     pass
 

@@ -1,1 +1,1 @@
-__all__ = ["all_of_them", "intcode"]
+__all__ = ["all_of_them", "intcode", "grid"]
